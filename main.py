@@ -33,13 +33,15 @@ def check_bug_price():
             check_out = check_in + timedelta(days=1)
             url = f"https://www.agoda.com/zh-tw/search?city={city['id']}&checkIn={check_in.date()}&checkOut={check_out.date()}&rooms=1&adults=2&currency=TWD"
             headers = { "User-Agent": "Mozilla/5.0" }
+            print(f"🌐 抓取網址: {url}")
             try:
                 resp = requests.get(url, headers=headers, timeout=15)
+                print(f"📄 回應狀態碼: {resp.status_code}")
                 soup = BeautifulSoup(resp.text, 'html.parser')
 
-                all_prices = []
                 hotels = soup.find_all(class_='PropertyCard')
-                print(f"📋 {city['name']}：找到 {len(hotels)} 間飯店")
+                print(f"🏨 找到飯店卡片數量: {len(hotels)}")
+                all_prices = []
                 for hotel in hotels:
                     try:
                         name = hotel.find(class_='PropertyCard__HotelName').text.strip()
@@ -48,9 +50,10 @@ def check_bug_price():
                         all_prices.append(price)
                         print(f"🏨 {name} - {price} TWD")
                     except:
+                        print("⚠️ 無法解析某個飯店價格")
                         continue
                 if not all_prices:
-                    print(f"⚠️ {city['name']} 沒有找到價格資料")
+                    print(f"⚠️ {city['name']} 沒有找到任何價格")
                     continue
 
                 avg_price = sum(all_prices) / len(all_prices)
@@ -62,7 +65,7 @@ def check_bug_price():
                         name = hotel.find(class_='PropertyCard__HotelName').text.strip()
                         price_str = hotel.find(class_='PropertyCard__PriceValue').text.strip()
                         price = int(price_str.replace(',', '').replace('TWD', ''))
-                        if price < avg_price * 0.8:  # 驗證版條件稍寬鬆
+                        if price < avg_price * 0.8:
                             msg_text = (f"🚨 Bug 價警報\n國家/城市: {city['country']} / {city['name']}\n"
                                         f"飯店名稱: {name}\n入住日期: {check_in.date()}\n價格: {price} TWD")
                             found.append(msg_text)
@@ -80,7 +83,5 @@ schedule.every(1).minutes.do(check_bug_price)  # 驗證版：每 1 分鐘跑一�
 
 while True:
     schedule.run_pending()
-    time.sleep(1)
-
     time.sleep(1)
 
