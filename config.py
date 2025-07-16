@@ -1,8 +1,9 @@
+import os
 
 # Gmail 設定
-GMAIL_ACCOUNT = "youraccount@gmail.com"
-APP_PASSWORD = "your_app_password"
-TO_EMAIL = "youraccount@gmail.com"
+GMAIL_ACCOUNT = os.environ.get("GMAIL_ACCOUNT")
+APP_PASSWORD = os.environ.get("APP_PASSWORD")
+TO_EMAIL = os.environ.get("TO_EMAIL")
 
 # 城市列表（city id 可自行從 Agoda 獲取）
 cities = [
