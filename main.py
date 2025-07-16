@@ -66,7 +66,7 @@ def check_bug_price():
                 print(f"❌ 抓取 {city['name']} 網頁失敗: {e}")
                 traceback.print_exc()
 
-schedule.every(1).minutes.do(check_bug_price)  # 測試版 1 分鐘執行一次
+schedule.every(30).minutes.do(check_bug_price)  # 測試版 1 分鐘執行一次
 
 while True:
     schedule.run_pending()
