@@ -39,36 +39,48 @@ def check_bug_price():
 
                 all_prices = []
                 hotels = soup.find_all(class_='PropertyCard')
+                print(f"📋 {city['name']}：找到 {len(hotels)} 間飯店")
                 for hotel in hotels:
                     try:
+                        name = hotel.find(class_='PropertyCard__HotelName').text.strip()
                         price_str = hotel.find(class_='PropertyCard__PriceValue').text.strip()
                         price = int(price_str.replace(',', '').replace('TWD', ''))
                         all_prices.append(price)
+                        print(f"🏨 {name} - {price} TWD")
                     except:
                         continue
                 if not all_prices:
+                    print(f"⚠️ {city['name']} 沒有找到價格資料")
                     continue
 
                 avg_price = sum(all_prices) / len(all_prices)
+                print(f"💰 {city['name']} 平均價格: {avg_price:.0f} TWD")
+
                 found = []
                 for hotel in hotels:
                     try:
                         name = hotel.find(class_='PropertyCard__HotelName').text.strip()
                         price_str = hotel.find(class_='PropertyCard__PriceValue').text.strip()
                         price = int(price_str.replace(',', '').replace('TWD', ''))
-                        if price < avg_price * 0.5 and not any(w in name.lower() for w in ['hostel', 'capsule']):
-                            found.append(f"🚨 Bug 價警報\n國家/城市: {city['country']} / {city['name']}\n飯店名稱: {name}\n入住日期: {check_in.date()}\n價格: {price} TWD")
+                        if price < avg_price * 0.8:  # 驗證版條件稍寬鬆
+                            msg_text = (f"🚨 Bug 價警報\n國家/城市: {city['country']} / {city['name']}\n"
+                                        f"飯店名稱: {name}\n入住日期: {check_in.date()}\n價格: {price} TWD")
+                            found.append(msg_text)
+                            print(f"🚨 發現疑似 Bug 價: {name} - {price} TWD")
                     except:
                         continue
                 for msg in found:
                     send_gmail("Agoda Bug 價警報", msg)
+
             except Exception as e:
                 print(f"❌ 抓取 {city['name']} 網頁失敗: {e}")
                 traceback.print_exc()
 
-schedule.every(30).minutes.do(check_bug_price)  # 測試版 1 分鐘執行一次
+schedule.every(1).minutes.do(check_bug_price)  # 驗證版：每 1 分鐘跑一次
 
 while True:
     schedule.run_pending()
+    time.sleep(1)
+
     time.sleep(1)
 
